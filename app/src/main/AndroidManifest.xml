@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+
+    <application
+        android:name=".FirebaseApplication"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.PackingListApp"
+        tools:targetApi="31">
+        <activity
+            android:name=".Welcome"
+            android:exported="false" />
+        <activity
+            android:name=".Home"
+            android:exported="false" />
+        <activity
+            android:name=".Calendar"
+            android:exported="false" />
+        <activity
+            android:name=".SliderMenu"
+            android:exported="false" />
+        <activity
+            android:name=".AboutUs"
+            android:exported="false" />
+        <activity
+            android:name=".Setting"
+            android:exported="false" />
+        <activity
+            android:name=".AddYourOwnList"
+            android:exported="false" />
+        <activity
+            android:name=".CheckList"
+            android:exported="false" />
+        <activity
+            android:name=".VerifyPhoneNo"
+            android:exported="false" />
+        <activity
+            android:name=".SignUp"
+            android:exported="false" />
+        <activity
+            android:name=".Login"
+            android:exported="false" />
+        <activity
+            android:name=".BabyNeedsPackingList"
+            android:exported="false" />
+        <activity
+            android:name=".BeachPackingList"
+            android:exported="false" />
+        <activity
+            android:name=".CampPackingList"
+            android:exported="false" />
+        <activity
+            android:name=".HikePackingList"
+            android:exported="false" />
+        <activity
+            android:name=".SwimPackingList"
+            android:exported="false" />
+        <activity
+            android:name=".HotelItemsList"
+            android:exported="false" />
+        <activity
+            android:name=".RentalItemList"
+            android:exported="false" />
+        <activity
+            android:name=".SecondHomeItemList"
+            android:exported="false" />
+        <activity
+            android:name=".CarItemList"
+            android:exported="false" />
+        <activity
+            android:name=".CruiseItemList"
+            android:exported="false" />
+        <activity
+            android:name=".AirplaneItemList"
+            android:exported="false" />
+        <activity
+            android:name=".TrainItemList"
+            android:exported="false" />
+        <activity
+            android:name=".MotorcycleItemList"
+            android:exported="false" />
+        <activity
+            android:name=".BoatItemList"
+            android:exported="false" />
+        <activity
+            android:name=".BusItemList"
+            android:exported="false" />
+        <activity
+            android:name=".EssentialsItemList"
+            android:exported="false" />
+        <activity
+            android:name=".InternationalItemList"
+            android:exported="false" />
+        <activity
+            android:name=".WorkItemList"
+            android:exported="false" />
+        <activity
+            android:name=".PersonalCareItemList"
+            android:exported="false" />
+        <activity
+            android:name=".PhotographItemList"
+            android:exported="false" />
+        <activity
+            android:name=".SnowSportsItemList"
+            android:exported="false" />
+        <activity
+            android:name=".FitnessItemList"
+            android:exported="false" />
+        <activity
+            android:name=".BusinessMealsItemList"
+            android:exported="false" />
+        <activity
+            android:name=".ToDoListItemList"
+            android:exported="false" />
+        <activity
+            android:name=".NewGenericItemList"
+            android:exported="false" />
+        <activity
+            android:name=".FamilyFrendsItemList"
+            android:exported="false" />
+        <activity
+            android:name=".Categories"
+            android:exported="false" />
+        <activity
+            android:name=".UserProfile"
+            android:exported="false" />
+        <activity
+            android:name=".BudgetCalculatorActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <meta-data
+            android:name="preloaded_fonts"
+            android:resource="@array/preloaded_fonts" />
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/google_maps_key" />
+
+
+
+    </application>
+
+</manifest>

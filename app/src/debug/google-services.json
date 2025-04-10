@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "66027419219",
+    "project_id": "packinglistapp-c47d7",
+    "storage_bucket": "packinglistapp-c47d7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:66027419219:android:5cde108e1f9aeb69c1f8a6",
+        "android_client_info": {
+          "package_name": "com.example.packinglistapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQ47mIJw42fdgQ3HBdAe4L1fYZafEsvGc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

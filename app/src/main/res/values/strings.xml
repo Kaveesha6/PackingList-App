@@ -1,0 +1,21 @@
+<resources>
+        <string name="app_name">Packing List App</string>
+        <string name="verify_button_text">Verify</string>
+        <string name="category_description">Easily Pack...</string>
+        <string name="hello_there_welcome_back">Hello there, Welcome Back</string>
+        <string name="sign_in_to_continue">Sign In to continue</string>
+        <string name="enter_username">Enter username</string>
+        <string name="enter_password">Enter Password</string>
+        <string name="remember_me">Remember Me</string>
+        <string name="forget_password">FORGET PASSWORD</string>
+        <string name="login">Login</string>
+        <string name="google_maps_key">AIzaSyBCgb7vKkaa2186zHR57NUu-EKs-5ar2eQ</string>
+        <string name="open_weather_key">e6314e431bdee40ead721f2ffbc5e2ae</string>
+        <string name="app_description">Your ultimate packing list companion for all your travel needs. Never forget essentials again! Plan, organize, and pack for your trips efficiently with our intuitive app.</string>
+
+
+
+
+
+
+</resources>
