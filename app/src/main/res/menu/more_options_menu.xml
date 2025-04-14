@@ -7,6 +7,9 @@
         android:id="@+id/menu_about_us"
         android:title="About Us" />
     <item
+        android:id="@+id/menu_delete_account"
+        android:title="Delete Account" />
+    <item
         android:id="@+id/menu_logout"
         android:title="Logout" />
 </menu>

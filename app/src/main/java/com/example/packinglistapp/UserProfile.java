@@ -15,6 +15,7 @@ import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -22,6 +23,18 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class UserProfile extends AppCompatActivity {
 
@@ -31,6 +44,9 @@ public class UserProfile extends AppCompatActivity {
     private Uri selectedImageUri;
     private ActivityResultLauncher<Intent> galleryLauncher;
     private SharedPreferences preferences;
+    private DatabaseReference database;
+    private FirebaseUser currentUser;
+    private User user;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -51,8 +67,11 @@ public class UserProfile extends AppCompatActivity {
         fullNameEditText = findViewById(R.id.full_name_edit);
         emailEditText = findViewById(R.id.email_edit);
         phoneEditText = findViewById(R.id.phone_edit);
-        passwordEditText = findViewById(R.id.password_edit);
         Button btnUpdate = findViewById(R.id.update);
+
+        currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        database = FirebaseDatabase.getInstance().getReference("userTrips");
+        fullNameTextView.setText(currentUser.getDisplayName());
 
         // Set up ActivityResultLauncher for gallery
         galleryLauncher = registerForActivityResult(
@@ -71,7 +90,7 @@ public class UserProfile extends AppCompatActivity {
                 }
         );
 
-        String imageUriString = PreferenceManager.getString(this, "profile_image_uri", "");
+        String imageUriString = "";
         if (!imageUriString.isEmpty()) {
             Uri imageUri = Uri.parse(imageUriString);
             profileImage.setImageURI(imageUri);
@@ -82,7 +101,7 @@ public class UserProfile extends AppCompatActivity {
         updatePackingListCount();
 
         // Set up click listener for profile image
-        profileImage.setOnClickListener(v -> showImageSelectionDialog());
+//        profileImage.setOnClickListener(v -> showImageSelectionDialog());
 
         // Set up update button click listener
         btnUpdate.setOnClickListener(v -> {
@@ -107,58 +126,109 @@ public class UserProfile extends AppCompatActivity {
     }
 
     private void loadUserData() {
-        // Load user data from SharedPreferences
-        String fullName = preferences.getString("fullName", "Olivia Johnson");
-        String email = preferences.getString("email", "123@gmail.com");
-        String phone = preferences.getString("phone", "+760987654");
-        String password = preferences.getString("password", "A#g123@lk");
-        String imageUriString = preferences.getString("profile_image_uri", "");
+        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("users");
 
-        // Set the data to UI components
-        fullNameEditText.setText(fullName);
-        emailEditText.setText(email);
-        phoneEditText.setText(phone);
-        passwordEditText.setText(password);
+        userRef.child(currentUser.getUid()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                User resultedUser = new User();
+                resultedUser.setName(snapshot.child("name").getValue(String.class));
+                resultedUser.setEmail(snapshot.child("email").getValue(String.class));
+                resultedUser.setPhone(snapshot.child("phone").getValue(String.class));
 
-        TextView fullNameTextView = findViewById(R.id.full_name);
-        fullNameTextView.setText(fullName);
-
-        // Load profile image if available
-        if (!imageUriString.isEmpty()) {
-            try {
-                selectedImageUri = Uri.parse(imageUriString);
-                profileImage.setImageURI(selectedImageUri);
-            } catch (Exception e) {
-                e.printStackTrace();
-                // If there's an error, use the default image
-                profileImage.setImageResource(R.drawable.profile);
+                // Set the data to UI components
+                fullNameEditText.setText(resultedUser.getName());
+                emailEditText.setText(resultedUser.getEmail());
+                phoneEditText.setText(resultedUser.getPhone());
             }
-        }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
+
+        // Load user data from SharedPreferences
+//        String fullName = preferences.getString("fullName", "Olivia Johnson");
+//        String email = preferences.getString("email", "123@gmail.com");
+//        String phone = preferences.getString("phone", "+760987654");
+//        String password = preferences.getString("password", "A#g123@lk");
+//        String imageUriString = preferences.getString("profile_image_uri", "");
+//
+//        // Set the data to UI components
+//        fullNameEditText.setText(fullName);
+//        emailEditText.setText(email);
+//        phoneEditText.setText(phone);
+//        passwordEditText.setText(password);
+//
+//        TextView fullNameTextView = findViewById(R.id.full_name);
+//        fullNameTextView.setText(fullName);
+//
+//        // Load profile image if available
+//        if (!imageUriString.isEmpty()) {
+//            try {
+//                selectedImageUri = Uri.parse(imageUriString);
+//                profileImage.setImageURI(selectedImageUri);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                // If there's an error, use the default image
+//                profileImage.setImageResource(R.drawable.profile);
+//            }
+//        }
     }
 
     private void saveUserData() {
+        uploadImageToFirebase(selectedImageUri);
+
         // Get data from UI components
         String fullName = fullNameEditText.getText().toString().trim();
         String email = emailEditText.getText().toString().trim();
         String phone = phoneEditText.getText().toString().trim();
-        String password = passwordEditText.getText().toString().trim();
 
-        // Save data using PreferenceManager
-        PreferenceManager.saveString(this, "fullName", fullName);
-        PreferenceManager.saveString(this, "email", email);
-        PreferenceManager.saveString(this, "phone", phone);
-        PreferenceManager.saveString(this, "password", password);
-        PreferenceManager.saveString(this, "profile_image_uri", selectedImageUri.toString());
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("email", email);
+        updates.put("name", fullName);
+        updates.put("phone", phone);
 
-        // Update the name display in the current view
-        TextView fullNameTextView = findViewById(R.id.full_name);
-        fullNameTextView.setText(fullName);
+        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("users").child(currentUser.getUid());
+        userRef.updateChildren(updates).addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                Toast.makeText(UserProfile.this, "Profile updated successfully", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
+
+    private void uploadImageToFirebase(Uri imageUri) {
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        StorageReference storageRef = FirebaseStorage.getInstance().getReference("profile_pictures/" + userId + ".jpg");
+
+        storageRef.putFile(imageUri)
+                .addOnSuccessListener(taskSnapshot -> {
+                    storageRef.getDownloadUrl().addOnSuccessListener(uri -> {
+                        // ✅ Save this URL to Firebase Auth or Realtime Database
+//                        updateUserProfilePicture(uri.toString());
+                    });
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Upload failed", Toast.LENGTH_SHORT).show();
+                });
+    }
+
 
     private void updatePackingListCount() {
         // Get the count of packing lists from SharedPreferences
-        int packingListsCount = PreferenceManager.getInt(this, "packing_lists_count", 0);
-        noOfLists.setText(String.valueOf(packingListsCount));
+        database.child(currentUser.getUid()).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                int packingListsCount = (int) snapshot.getChildrenCount();
+                noOfLists.setText(String.valueOf(packingListsCount));
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 
     @Override

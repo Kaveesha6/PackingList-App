@@ -1,5 +1,6 @@
 package com.example.packinglistapp;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -17,6 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.DataSnapshot;
@@ -60,6 +62,7 @@ public class BudgetCalculatorActivity extends AppCompatActivity {
     // Adapters
     private ItemsAdapter itemsAdapter;
     private CategoryBreakdownAdapter categoryAdapter;
+    private String tripId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,6 +76,9 @@ public class BudgetCalculatorActivity extends AppCompatActivity {
         setupFilterSpinner();
         setupRecyclerViews();
         setupListeners();
+
+        Intent intent = getIntent();
+        tripId = intent.getStringExtra("tripId");
 
         // Retrieve saved data from Firebase
         retrieveBudgetDataFromFirebase();
@@ -161,11 +167,13 @@ public class BudgetCalculatorActivity extends AppCompatActivity {
             @Override
             public void onStatusChange(PackingItem item) {
                 toggleItemStatus(item);
+                updateBudget();
             }
 
             @Override
             public void onRemove(PackingItem item) {
                 removeItem(item);
+                updateBudget();
             }
         }, currencySymbol);
         recyclerViewItems.setAdapter(itemsAdapter);
@@ -230,6 +238,7 @@ public class BudgetCalculatorActivity extends AppCompatActivity {
         calculateTotals();
         updateCategoryBreakdowns();
         updateUI();
+        updateBudget();
 
         editItemName.setText("");
         editPrice.setText("");
@@ -251,6 +260,7 @@ public class BudgetCalculatorActivity extends AppCompatActivity {
         calculateTotals();
         updateCategoryBreakdowns();
         updateUI();
+        updateBudget();
     }
 
     private void calculateTotals() {
@@ -308,8 +318,7 @@ public class BudgetCalculatorActivity extends AppCompatActivity {
 
     // Save Budget Data to Firebase
     private void saveBudgetDataToFirebase() {
-        String userId = "exampleUserId";  // Replace with actual user ID
-        String tripId = "exampleTripId";  // Replace with actual trip ID
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();  // Replace with actual user ID
 
         DatabaseReference budgetRef = FirebaseDatabase.getInstance().getReference("userTrips")
                 .child(userId)
@@ -321,6 +330,7 @@ public class BudgetCalculatorActivity extends AppCompatActivity {
         budgetData.put("spentAmount", spentAmount);
         budgetData.put("unpurchasedAmount", unpurchasedAmount);
         budgetData.put("remainingBudget", remainingBudget);
+        budgetData.put("itemList",itemsList);
 
         budgetRef.setValue(budgetData).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
@@ -333,8 +343,7 @@ public class BudgetCalculatorActivity extends AppCompatActivity {
 
     // Retrieve Budget Data from Firebase
     private void retrieveBudgetDataFromFirebase() {
-        String userId = "exampleUserId";  // Replace with actual user ID
-        String tripId = "exampleTripId";  // Replace with actual trip ID
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();  // Replace with actual user ID
 
         DatabaseReference budgetRef = FirebaseDatabase.getInstance().getReference("userTrips")
                 .child(userId)
@@ -350,6 +359,18 @@ public class BudgetCalculatorActivity extends AppCompatActivity {
                     unpurchasedAmount = dataSnapshot.child("unpurchasedAmount").getValue(Double.class);
                     remainingBudget = dataSnapshot.child("remainingBudget").getValue(Double.class);
 
+                    for (DataSnapshot itemSnapshot :dataSnapshot.child("itemList").getChildren()){
+                        String name = itemSnapshot.child("name").getValue(String.class);
+                        String category = itemSnapshot.child("category").getValue(String.class);
+                        int quantity = itemSnapshot.child("quantity").getValue(Integer.class);
+                        double price = itemSnapshot.child("price").getValue(Double.class);
+                        boolean isPurchased = itemSnapshot.child("purchased").getValue(Boolean.class);
+
+                        PackingItem newItem = new PackingItem(name, category, quantity, price, isPurchased);
+                        itemsList.add(newItem);
+                    }
+
+                    editTotalBudget.setText(decimalFormat.format(totalBudget));
                     calculateTotals();
                     updateUI();
                 }

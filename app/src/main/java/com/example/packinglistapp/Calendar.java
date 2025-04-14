@@ -1,10 +1,8 @@
 package com.example.packinglistapp;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.annotation.SuppressLint;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AutoCompleteTextView;
@@ -20,9 +18,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.common.api.Status;
 import com.google.android.libraries.places.api.Places;
+import com.google.android.libraries.places.api.model.AutocompletePrediction;
+import com.google.android.libraries.places.api.model.AutocompleteSessionToken;
 import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.model.PhotoMetadata;
 import com.google.android.libraries.places.api.net.FetchPhotoRequest;
+import com.google.android.libraries.places.api.net.FetchPlaceRequest;
+import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRequest;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.Autocomplete;
 import com.google.android.libraries.places.widget.AutocompleteActivity;
@@ -40,28 +42,30 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
+
 import android.util.Log;
+
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-
+import com.google.firebase.database.ValueEventListener;
 
 
 public class Calendar extends AppCompatActivity {
     private AutoCompleteTextView searchPlace;
+    private TextView headerTripName;
     private TextInputEditText tripName;
     private Button btnSelectLists;
     private LinearLayout btnBusiness, btnVacation;
@@ -75,6 +79,8 @@ public class Calendar extends AppCompatActivity {
     private String tripType = ""; // Business or Vacation
     private final String API_KEY = "e6314e431bdee40ead721f2ffbc5e2ae"; // Replace with your OpenWeatherMap API Key
     private final String CITY_NAME = "Colombo";
+    private String tripId;
+    private PlacesClient placesClient;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -83,6 +89,7 @@ public class Calendar extends AppCompatActivity {
         setContentView(R.layout.activity_calendar);
 
         // Initialize UI elements
+        headerTripName = findViewById(R.id.header_trip_name);
         searchPlace = findViewById(R.id.searchPlace);
         tripName = findViewById(R.id.tripName);
         btnSelectLists = findViewById(R.id.btnSelectLists);
@@ -103,7 +110,6 @@ public class Calendar extends AppCompatActivity {
 
 // Initialize the weather container
         LinearLayout weatherContainer = findViewById(R.id.weatherContainer);
-
 
         // Initialize Places API
         if (!Places.isInitialized()) {
@@ -144,8 +150,6 @@ public class Calendar extends AppCompatActivity {
             }
         });
 
-
-
         // Set up close button
         btnCloseCalendar.setOnClickListener(v -> {
             // Go back to home screen
@@ -163,6 +167,42 @@ public class Calendar extends AppCompatActivity {
 
         // Fetch weather data
         getWeatherData(CITY_NAME);
+
+        // Load data to update a trip
+        Intent intent = getIntent();
+        tripId = intent.getStringExtra("tripId");
+        if (tripId != null) {
+            FirebaseDatabase database = FirebaseDatabase.getInstance();
+            DatabaseReference tripsRef = database.getReference("userTrips")
+                    .child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+            tripsRef.child(tripId).addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    String name = dataSnapshot.child("name").getValue(String.class);
+                    String destination = dataSnapshot.child("destination").getValue(String.class);
+                    String startDate = dataSnapshot.child("startDate").getValue(String.class);
+                    String endDate = dataSnapshot.child("endDate").getValue(String.class);
+                    String vacactionType = dataSnapshot.child("tripType").getValue(String.class);
+                    headerTripName.setText(name.toUpperCase());
+                    tripName.setText(name);
+                    searchPlace.setText(destination);
+                    calendarView.setDate(convertDateStringToLong(endDate));
+                    selectedStartDate = startDate;
+                    selectedEndDate = endDate;
+                    updateSelectedDates();
+                    if (vacactionType.equals("Vacation")) {
+                        selectCategory("Vacation");
+                    } else {
+                        selectCategory("Business");
+                    }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+                    // Handle error
+                }
+            });
+        }
     }
 
     private void selectCategory(String category) {
@@ -319,6 +359,7 @@ public class Calendar extends AppCompatActivity {
             Log.e("WeatherAPI", "Parse error: " + e.getMessage());
         }
     }
+
     // Update your existing getWeatherData method with this version
     private void getWeatherData(String city) {
         // Show a loading indicator or message (optional)
@@ -358,6 +399,7 @@ public class Calendar extends AppCompatActivity {
             }
         });
     }
+
     private void updateSelectedDates() {
         if (!selectedStartDate.isEmpty() && !selectedEndDate.isEmpty()) {
             long days = calculateDays(selectedStartDate, selectedEndDate);
@@ -405,9 +447,15 @@ public class Calendar extends AppCompatActivity {
         // Create a Trip object with the collected data
         Trip trip = new Trip(name, destination, selectedStartDate, selectedEndDate, tripType, calculateDays(selectedStartDate, selectedEndDate));
 
+        Intent intent = new Intent(Calendar.this, Categories.class);
+        startActivity(intent);
         // Save to Firebase
-        String tripId = FirebaseDatabase.getInstance().getReference().child("userTrips").push().getKey();
-        if (tripId != null) {
+        boolean isNewRecord = false;
+        if (tripId == null) {
+            isNewRecord = true;
+            tripId = FirebaseDatabase.getInstance().getReference().child("userTrips").push().getKey();
+        }
+        if (isNewRecord) {
             FirebaseDatabase.getInstance().getReference("userTrips")
                     .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                     .child(tripId)
@@ -415,16 +463,44 @@ public class Calendar extends AppCompatActivity {
                     .addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
                             // Save packing items and budget data
-                            savePackingItemsToFirebase(tripId);
-                            saveBudgetDataToFirebase(tripId);
+                            //savePackingItemsToFirebase(tripId);
+                            //saveBudgetDataToFirebase(tripId);
                             Toast.makeText(this, "Trip saved successfully!", Toast.LENGTH_SHORT).show();
+                            Intent categoryIntent = new Intent(Calendar.this, Categories.class);
+                            categoryIntent.putExtra("tripId", tripId);
+                            startActivity(categoryIntent);
                         } else {
                             Toast.makeText(this, "Failed to save trip", Toast.LENGTH_SHORT).show();
                         }
                     });
+        } else {
+            DatabaseReference ref = FirebaseDatabase.getInstance().getReference("userTrips")
+                    .child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                    .child(tripId);
+
+            // Create a map of fields to update
+            Map<String, Object> updates = new HashMap<>();
+            updates.put("destination", trip.getDestination());
+            updates.put("name", trip.getName());
+            updates.put("startDate", trip.getStartDate());
+            updates.put("endDate", trip.getEndDate());
+            updates.put("duration", trip.getDuration());
+
+            ref.updateChildren(updates)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            // Save packing items and budget data
+                            //savePackingItemsToFirebase(tripId);
+                            //saveBudgetDataToFirebase(tripId);
+                            Toast.makeText(this, "Trip saved successfully!", Toast.LENGTH_SHORT).show();
+                            Intent categoryIntent = new Intent(Calendar.this, Categories.class);
+                            categoryIntent.putExtra("tripId", tripId);
+                            startActivity(categoryIntent);
+                        } else {
+                            Toast.makeText(this, "Failed to save trip", Toast.LENGTH_SHORT).show();
+                        }});
         }
     }
-
 
     private void saveTripToFirebase() {
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid(); // Get the current user ID
@@ -455,8 +531,8 @@ public class Calendar extends AppCompatActivity {
                 .child("packingItems");
 
         // Create some example packing items
-        PackingItems item1 = new PackingItems("Swimsuit", 2, false, 25.99,"",0,0);
-        PackingItems item2 = new PackingItems("Towel", 1, false, 12.50,"",0,0);
+        PackingItems item1 = new PackingItems("Swimsuit", 2, false, 25.99, "", 0, 0);
+        PackingItems item2 = new PackingItems("Towel", 1, false, 12.50, "", 0, 0);
 
         // Generate unique IDs for the items and save them to Firebase
         String itemId1 = itemsRef.push().getKey();
@@ -497,8 +573,55 @@ public class Calendar extends AppCompatActivity {
                 });
     }
 
+    private Place getPlacefromTripName(String name) {
+        AtomicReference<Place> place = new AtomicReference<>();
 
+        AutocompleteSessionToken token = AutocompleteSessionToken.newInstance();
 
+        FindAutocompletePredictionsRequest request = FindAutocompletePredictionsRequest.builder()
+                .setSessionToken(token)
+                .setQuery("Colombo") // 👈 Replace with your town name
+                .build();
+
+        placesClient.findAutocompletePredictions(request)
+                .addOnSuccessListener(response -> {
+                    for (AutocompletePrediction prediction : response.getAutocompletePredictions()) {
+                        String placeId = prediction.getPlaceId(); // 👈 Use this to get Place details
+                        String placeName = prediction.getPrimaryText(null).toString();
+                        Log.d("Places", "Found place: " + placeName + ", placeId: " + placeId);
+
+                        // ✅ Get full Place object now
+                        List<Place.Field> placeFields = Arrays.asList(
+                                Place.Field.ID,
+                                Place.Field.NAME,
+                                Place.Field.LAT_LNG,
+                                Place.Field.ADDRESS
+                        );
+
+                        FetchPlaceRequest fetchRequest = FetchPlaceRequest.builder(placeId, placeFields).build();
+                        placesClient.fetchPlace(fetchRequest).addOnSuccessListener(fetchResponse -> {
+                            Log.d("Places", "Place found: " + place.get().getName() + " (" + place.get().getLatLng() + ")");
+                            place.set(fetchResponse.getPlace());
+                            // 🎯 You now have the full Place object
+                        });
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Places", "Place not found: " + e.getMessage());
+                });
+        return place.get();
+    }
+
+    public static long convertDateStringToLong(String dateString) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+            Date date = sdf.parse(dateString);
+            return date.getTime(); // ✅ returns milliseconds since Jan 1, 1970
+        } catch (Exception e) {
+            e.printStackTrace();
+            return -1; // or handle error
+        }
+    }
 }
 
 

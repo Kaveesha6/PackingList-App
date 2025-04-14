@@ -6,9 +6,17 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.List;
 
@@ -40,12 +48,14 @@ public class HotelItemAdapter extends RecyclerView.Adapter<HotelItemAdapter.View
 
         holder.checkboxItem.setOnCheckedChangeListener((buttonView, isChecked) -> {
             item.setChecked(isChecked);
+            saveItemListItem(item);
         });
 
         holder.buttonPlus.setOnClickListener(v -> {
             int quantity = item.getQuantity() + 1;
             item.setQuantity(quantity);
             holder.quantityValue.setText(String.valueOf(quantity));
+            saveItemListItem(item);
         });
 
         holder.buttonMinus.setOnClickListener(v -> {
@@ -55,12 +65,14 @@ public class HotelItemAdapter extends RecyclerView.Adapter<HotelItemAdapter.View
                 item.setQuantity(quantity);
                 holder.quantityValue.setText(String.valueOf(quantity));
             }
+            saveItemListItem(item);
         });
 
         holder.buttonDelete.setOnClickListener(v -> {
             itemList.remove(position);
             notifyItemRemoved(position);
             notifyItemRangeChanged(position, itemList.size());
+            removeItemListItem(item);
         });
     }
 
@@ -91,5 +103,78 @@ public class HotelItemAdapter extends RecyclerView.Adapter<HotelItemAdapter.View
             buttonMinus = itemView.findViewById(R.id.buttonMinus);
             buttonDelete = itemView.findViewById(R.id.buttonDelete);
         }
+    }
+
+    private void saveItemListItem(HotelItem hotelItem) {
+        // Get the current user's ID (you'll need to replace this with actual user ID)
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();  // Replace with actual user ID
+
+        HotelItem newHotelItem = new HotelItem(hotelItem.getName());
+        newHotelItem.setChecked(hotelItem.isChecked());
+        newHotelItem.setQuantity(hotelItem.getQuantity());
+
+        // Save the hotel item to Firebase
+        DatabaseReference hotelRef = FirebaseDatabase.getInstance().getReference("userTrips")
+                .child(userId)
+                .child(((HotelItemsList) context).tripId)
+                .child(((HotelItemsList) context).itemListType)
+                .child(hotelItem.getHotelItemId());
+
+            hotelRef.setValue(newHotelItem).addOnCompleteListener(task -> {
+                if (task.isSuccessful()) {
+                    Toast.makeText(context, "Item saved successfully", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(context, "Failed to save item", Toast.LENGTH_SHORT).show();
+                }
+            });
+    }
+
+    private void removeItemListItem(HotelItem hotelItem) {
+        // Get the current user's ID (you'll need to replace this with actual user ID)
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();  // Replace with actual user ID
+
+        // Save the hotel item to Firebase
+        DatabaseReference hotelRef = FirebaseDatabase.getInstance().getReference("userTrips")
+                .child(userId)
+                .child(((HotelItemsList) context).tripId)
+                .child(((HotelItemsList) context).itemListType)
+                .child(hotelItem.getHotelItemId());
+
+        hotelRef.removeValue().addOnCompleteListener(
+                task -> {
+                    if (task.isSuccessful()) {
+                        updateItemQuantity();
+                        Toast.makeText(context, "Item removed successfully", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(context, "Failed to remove item", Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+    }
+
+    private void updateItemQuantity() {
+        // Get the current user's ID (you'll need to replace this with actual user ID)
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();  // Replace with actual user ID
+        final int[] quantity = new int[1];
+
+        // Save the hotel item to Firebase
+        DatabaseReference hotelRef = FirebaseDatabase.getInstance().getReference("userTrips")
+                .child(userId)
+                .child(((HotelItemsList) context).tripId);
+
+        hotelRef.child("itemCount").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                quantity[0] = snapshot.getValue(Integer.class);
+                quantity[0] -= 1;
+
+                hotelRef.child("itemCount").setValue(quantity[0]);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
     }
 }

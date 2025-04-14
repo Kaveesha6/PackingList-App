@@ -1,14 +1,23 @@
 package com.example.packinglistapp;
 
 public class HotelItem {
+    private String hotelItemId;
     private String name;
     private int quantity;
-    private boolean isChecked;
+    private boolean checked;
 
     public HotelItem(String name) {
         this.name = name;
         this.quantity = 1;
-        this.isChecked = false;
+        this.checked = false;
+    }
+
+    public String getHotelItemId() {
+        return hotelItemId;
+    }
+
+    public void setHotelItemId(String hotelItemId) {
+        this.hotelItemId = hotelItemId;
     }
 
     public String getName() {
@@ -28,10 +37,11 @@ public class HotelItem {
     }
 
     public boolean isChecked() {
-        return isChecked;
+        return checked;
     }
 
     public void setChecked(boolean checked) {
-        isChecked = checked;
+        this.checked = checked;
     }
 }
+

@@ -1,5 +1,7 @@
 package com.example.packinglistapp;
 
+import android.app.AlertDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -25,12 +27,16 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import android.util.Log;
 import java.util.HashMap;
@@ -76,11 +82,11 @@ public class Home extends AppCompatActivity {
         if (selectedItems != null) {
             // Display in your RecyclerView
             displaySelectedItems(selectedItems);
-        }
+        };
 
         // Initialize Firebase
         database = FirebaseDatabase.getInstance();
-        tripsRef = database.getReference("trips");
+        tripsRef = database.getReference("userTrips").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
 
         // Initialize SharedPreferences
         preferences = getSharedPreferences("PackingListPrefs", MODE_PRIVATE);
@@ -100,7 +106,6 @@ public class Home extends AppCompatActivity {
         // Set up RecyclerView
         tripsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // Load trips from Firebase
         loadTripsFromFirebase();
 
         // Set up click listeners
@@ -148,6 +153,41 @@ public class Home extends AppCompatActivity {
                 // Sign out the user
                 signOut();
                 return true;
+            }
+            else if (itemId == R.id.menu_delete_account){
+                String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+                DatabaseReference userRef = FirebaseDatabase.getInstance()
+                        .getReference("users")
+                        .child(userId);
+
+                userRef.removeValue().addOnCompleteListener(
+                        task -> {
+                            if (task.isSuccessful()) {
+                                DatabaseReference usernameRef = FirebaseDatabase.getInstance()
+                                        .getReference("usernames");
+
+                                Query query = usernameRef.equalTo(userId);
+
+                                query.getRef().removeValue();
+
+                                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+                                if (user != null) {
+                                    user.delete()
+                                            .addOnCompleteListener(t -> {
+                                                if (t.isSuccessful()) {
+                                                    signOut();
+                                                    Log.d("Firebase", "User account deleted.");
+                                                    // Optionally: redirect to login or show confirmation
+                                                } else {
+                                                    Log.e("Firebase", "Error deleting user", t.getException());
+                                                }
+                                            });
+                                }
+                            }
+                        }
+                );
             }
 
             return false;
@@ -215,32 +255,35 @@ public class Home extends AppCompatActivity {
         }
     }
 
-    private void setupRecyclerView() {
-        // Set layout manager
-        tripsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        // Initialize with sample data or load from database/preferences
-        List<Trip> tripList = getSampleTrips(); // Replace with your data source
-
-        // Create and set adapter
-        tripAdapter = new TripAdapter(tripList);
-        tripsRecyclerView.setAdapter(tripAdapter);
-    }
+//    private void setupRecyclerView() {
+//        // Set layout manager
+//        tripsRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+//
+//        // Initialize with sample data or load from database/preferences
+//        List<Trip> tripList = getSampleTrips(); // Replace with your data source
+//
+//        // Create and set adapter
+//        tripAdapter = new TripAdapter(tripList);
+//        tripsRecyclerView.setAdapter(tripAdapter);
+//    }
 
     private void loadTripsFromFirebase() {
-        tripsRef.addValueEventListener(new ValueEventListener() {
+        tripsRef.orderByChild("startDate").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 List<Trip> trips = new ArrayList<>();
 
                 for (DataSnapshot tripSnapshot : dataSnapshot.getChildren()) {
-                    Trip trip = tripSnapshot.getValue(Trip.class);
-                    if (trip != null) {
-                        trips.add(trip);
-                    }
+                    String tripId = tripSnapshot.getKey();
+                    String name = tripSnapshot.child("name").getValue(String.class);
+                    String tripDate = tripSnapshot.child("startDate").getValue(String.class);
+                    int itemCount = tripSnapshot.child("itemCount").getValue(Integer.class);
+                    Trip trip = new Trip(tripId,name,tripDate,itemCount);
+                    trips.add(trip);
                 }
 
                 // Update the adapter with the loaded trips
+                Collections.reverse(trips);
                 tripAdapter = new TripAdapter(trips);
                 tripsRecyclerView.setAdapter(tripAdapter);
             }
@@ -255,9 +298,9 @@ public class Home extends AppCompatActivity {
     private List<Trip> getSampleTrips() {
         // This is a placeholder. In a real app, you would load this data from a database or API
         List<Trip> trips = new ArrayList<>();
-        trips.add(new Trip("Summer Vacation", "June 15 - June 30", 12));
-        trips.add(new Trip("Business Trip", "April 10 - April 12", 5));
-        trips.add(new Trip("Weekend Getaway", "May 5 - May 7", 8));
+        trips.add(new Trip("123","Summer Vacation", "June 15 - June 30", 12));
+        trips.add(new Trip("456","Business Trip", "April 10 - April 12", 5));
+        trips.add(new Trip("789","Weekend Getaway", "May 5 - May 7", 8));
         return trips;
     }
 
@@ -311,7 +354,8 @@ public class Home extends AppCompatActivity {
         String imageUriString = preferences.getString("profile_image_uri", "");
 
         // Update the user name with proper formatting
-        userNameTextView.setText("Hi, " + fullName + "!");
+        userNameTextView.setText("Hi, " + mAuth.getCurrentUser().getDisplayName() + "!");
+        Uri gmailProfilePicture = mAuth.getCurrentUser().getPhotoUrl();
 
         // Update profile image if available
         if (!imageUriString.isEmpty()) {
@@ -321,7 +365,7 @@ public class Home extends AppCompatActivity {
             } catch (Exception e) {
                 e.printStackTrace();
                 // If there's an error, use the default image
-                profileImageView.setImageResource(R.drawable.profile);
+                profileImageView.setImageURI(gmailProfilePicture);
             }
         }
     }
@@ -337,14 +381,24 @@ public class Home extends AppCompatActivity {
 
     // Inner classes for RecyclerView
     public static class Trip {
+        private String tripId;
         private String name;
         private String date;
         private int itemCount;
 
-        public Trip(String name, String date, int itemCount) {
+        public Trip(String tripId, String name, String date, int itemCount) {
+            this.tripId = tripId;
             this.name = name;
             this.date = date;
             this.itemCount = itemCount;
+        }
+
+        public String getTripId() {
+            return tripId;
+        }
+
+        public void setTripId(String tripId) {
+            this.tripId = tripId;
         }
 
         public String getName() {
@@ -385,9 +439,38 @@ public class Home extends AppCompatActivity {
             // Set click listener for the item
             holder.itemView.setOnClickListener(v -> {
                 // Navigate to trip details activity
-                Intent intent = new Intent(Home.this, TripDetails.class);
-                intent.putExtra("TRIP_NAME", trip.getName());
+                Intent intent = new Intent(Home.this, Calendar.class);
+                intent.putExtra("tripId",trip.getTripId());
                 startActivity(intent);
+            });
+
+            holder.itemView.setOnLongClickListener(v -> {
+                new AlertDialog.Builder(holder.itemView.getContext())
+                        .setTitle("Confirm")
+                        .setMessage("Delete this item?")
+                        .setPositiveButton("Yes", (dialog, which) -> {
+                            // Get the current user's ID (you'll need to replace this with actual user ID)
+                            String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();  // Replace with actual user ID
+
+                            // Save the hotel item to Firebase
+                            DatabaseReference hotelRef = FirebaseDatabase.getInstance().getReference("userTrips")
+                                    .child(userId)
+                                    .child(trip.getTripId());
+
+                            hotelRef.removeValue().addOnCompleteListener(
+                                    task -> {
+                                        if (task.isSuccessful()) {
+                                            Toast.makeText(Home.this, "Trip removed successfully", Toast.LENGTH_SHORT).show();
+                                        } else {
+                                            Toast.makeText(Home.this, "Failed to remove Trip", Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
+                            );
+                        })
+                        .setNegativeButton("No", null)
+                        .show();
+
+                return true;
             });
         }
 

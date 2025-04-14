@@ -82,7 +82,7 @@
                     android:layout_centerInParent="true"
                     android:fontFamily="@font/bungee"
                     android:includeFontPadding="false"
-                    android:text="packing lists"
+                    android:text="Trip Lists"
                     android:textSize="20sp" />
 
                 <TextView
@@ -93,7 +93,7 @@
                     android:layout_marginLeft="165dp"
                     android:fontFamily="@font/bungee"
                     android:includeFontPadding="false"
-                    android:text="1"
+                    android:text="0"
                     android:textColor="#808080"
                     android:textSize="20sp" />
 
@@ -139,11 +139,12 @@
             android:hint="Email">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:layout_width="match_parent"
                 android:id="@+id/email_edit"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:drawableLeft="@drawable/paper_plane"
                 android:drawablePadding="10dp"
+                android:editable="false"
                 android:text="123@gmail.com">
 
 
@@ -176,21 +177,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="10dp"
-            android:hint="Password">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:layout_width="match_parent"
-                android:id="@+id/password_edit"
-                android:layout_height="wrap_content"
-                android:drawableLeft="@drawable/password"
-                android:drawablePadding="10dp"
-                android:text="A#g123@lk">
-
-
-            </com.google.android.material.textfield.TextInputEditText>
-
-
-        </com.google.android.material.textfield.TextInputLayout>
+            android:hint="Password"/>
 
         <Button
             android:id="@+id/update"

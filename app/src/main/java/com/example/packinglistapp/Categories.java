@@ -44,7 +44,7 @@ public class Categories extends AppCompatActivity {
     private Button btnDeleteCategory;
     private Button btnAddCategory;
     private Button btnFinished;
-
+    private String tripId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +59,7 @@ public class Categories extends AppCompatActivity {
         // Initialize category list
         categoryList = new ArrayList<>();
         initializeCategoryList();
-        loadCustomCategories(); // Load any saved custom categories
+        //loadCustomCategories(); // Load any saved custom categories
 
         // Set up RecyclerView
         int numberOfColumns = 3;
@@ -100,84 +100,137 @@ public class Categories extends AppCompatActivity {
                     switch (item.getName()) {
                         case "Hotel":
                             intent = new Intent(Categories.this, HotelItemsList.class);
+                            intent.putExtra("tripId", tripId);
+                            intent.putExtra("itemListType", "hotelItems");
                             break;
                         case "Rental":
-                            intent = new Intent(Categories.this, RentalItemList.class);
+                            intent = new Intent(Categories.this, HotelItemsList.class);
+                            intent.putExtra("tripId", tripId);
+                            intent.putExtra("itemListType", "rentalItems");
                             break;
                         case "Family / Friends":
-                            intent = new Intent(Categories.this, FamilyFrendsItemList.class);
+                            intent = new Intent(Categories.this, HotelItemsList.class);
+                            intent.putExtra("tripId", tripId);
+                            intent.putExtra("itemListType", "familyItems");
                             break;
                         case "Second Home":
-                            intent = new Intent(Categories.this, SecondHomeItemList.class);
+                            intent = new Intent(Categories.this, HotelItemsList.class);
+                            intent.putExtra("tripId", tripId);
+                            intent.putExtra("itemListType", "secondHomeItems");
                             break;
                         case "Camping":
-                            intent = new Intent(Categories.this, CampPackingList.class);
+                            intent = new Intent(Categories.this, HotelItemsList.class);
+                            intent.putExtra("tripId", tripId);
+                            intent.putExtra("itemListType", "campingItems");
                             break;
                         case "Cruise":
-                            intent = new Intent(Categories.this, CruiseItemList.class);
+                            intent = new Intent(Categories.this, HotelItemsList.class);
+                            intent.putExtra("tripId", tripId);
+                            intent.putExtra("itemListType", "cruiseItems");
                             break;
                         case "Airplane":
-                            intent = new Intent(Categories.this, AirplaneItemList.class);
+                            intent = new Intent(Categories.this, HotelItemsList.class);
+                            intent.putExtra("tripId", tripId);
+                            intent.putExtra("itemListType", "airplaneItems");
                             break;
                         case "Car":
-                            intent = new Intent(Categories.this, CarItemList.class);
+                            intent = new Intent(Categories.this, HotelItemsList.class);
+                            intent.putExtra("tripId", tripId);
+                            intent.putExtra("itemListType", "carItems");
                             break;
                         case "Train":
-                            intent = new Intent(Categories.this, TrainItemList.class);
+                            intent = new Intent(Categories.this, HotelItemsList.class);
+                            intent.putExtra("tripId", tripId);
+                            intent.putExtra("itemListType", "trainItems");
                             break;
                         case "Motorcycle":
-                            intent = new Intent(Categories.this, MotorcycleItemList.class);
+                            intent = new Intent(Categories.this, HotelItemsList.class);
+                            intent.putExtra("tripId", tripId);
+                            intent.putExtra("itemListType", "motorcycleItems");
                             break;
                         case "Boat":
-                            intent = new Intent(Categories.this, BoatItemList.class);
+                            intent = new Intent(Categories.this, HotelItemsList.class);
+                            intent.putExtra("tripId", tripId);
+                            intent.putExtra("itemListType", "boatItems");
                             break;
                         case "Bus":
-                            intent = new Intent(Categories.this, BusItemList.class);
+                            intent = new Intent(Categories.this, HotelItemsList.class);
+                            intent.putExtra("tripId", tripId);
+                            intent.putExtra("itemListType", "busItems");
                             break;
                         case "Essentials":
-                            intent = new Intent(Categories.this, EssentialsItemList.class);
+                            intent = new Intent(Categories.this, HotelItemsList.class);
+                            intent.putExtra("tripId", tripId);
+                            intent.putExtra("itemListType", "essentialsItems");
                             break;
                         case "Clothes":
-                            intent = new Intent(Categories.this, ClothesItemList.class);
+                            intent = new Intent(Categories.this, HotelItemsList.class);
+                            intent.putExtra("tripId", tripId);
+                            intent.putExtra("itemListType", "clothesItems");
                             break;
                         case "International":
-                            intent = new Intent(Categories.this, InternationalItemList.class);
+                            intent = new Intent(Categories.this, HotelItemsList.class);
+                            intent.putExtra("tripId", tripId);
+                            intent.putExtra("itemListType", "internationalItems");
                             break;
                         case "Work":
-                            intent = new Intent(Categories.this, WorkItemList.class);
+                            intent = new Intent(Categories.this, HotelItemsList.class);
+                            intent.putExtra("tripId", tripId);
+                            intent.putExtra("itemListType", "workItems");
                             break;
                         case "Personal Care":
-                            intent = new Intent(Categories.this, PersonalCareItemList.class);
+                            intent = new Intent(Categories.this, HotelItemsList.class);
+                            intent.putExtra("tripId", tripId);
+                            intent.putExtra("itemListType", "personalCareItems");
                             break;
                         case "Beach":
-                            intent = new Intent(Categories.this, BeachPackingList.class);
+                            intent = new Intent(Categories.this, HotelItemsList.class);
+                            intent.putExtra("tripId", tripId);
+                            intent.putExtra("itemListType", "beachItems");
                             break;
                         case "Swimming":
-                            intent = new Intent(Categories.this, SwimPackingList.class);
+                            intent = new Intent(Categories.this, HotelItemsList.class);
+                            intent.putExtra("tripId", tripId);
+                            intent.putExtra("itemListType", "swimmingItems");
                             break;
                         case "Photography":
-                            intent = new Intent(Categories.this, PhotographItemList.class);
+                            intent = new Intent(Categories.this, HotelItemsList.class);
+                            intent.putExtra("tripId", tripId);
+                            intent.putExtra("itemListType", "photographyItems");
                             break;
                         case "Snow sports":
-                            intent = new Intent(Categories.this, SnowSportsItemList.class);
+                            intent = new Intent(Categories.this, HotelItemsList.class);
+                            intent.putExtra("tripId", tripId);
+                            intent.putExtra("itemListType", "snowSportsItems");
                             break;
                         case "Fitness":
-                            intent = new Intent(Categories.this, FitnessItemList.class);
+                            intent = new Intent(Categories.this, HotelItemsList.class);
+                            intent.putExtra("tripId", tripId);
+                            intent.putExtra("itemListType", "fitnessItems");
                             break;
                         case "Hiking":
-                            intent = new Intent(Categories.this, HikePackingList.class);
+                            intent = new Intent(Categories.this, HotelItemsList.class);
+                            intent.putExtra("tripId", tripId);
+                            intent.putExtra("itemListType", "hikingItems");
                             break;
                         case "Business Meals":
-                            intent = new Intent(Categories.this, BusinessMealsItemList.class);
+                            intent = new Intent(Categories.this, HotelItemsList.class);
+                            intent.putExtra("tripId", tripId);
+                            intent.putExtra("itemListType", "businessMealsItems");
                             break;
                         case "Todo List":
-                            intent = new Intent(Categories.this, ToDoListItemList.class);
+                            intent = new Intent(Categories.this, HotelItemsList.class);
+                            intent.putExtra("tripId", tripId);
+                            intent.putExtra("itemListType", "todoItems");
                             break;
                         case "Baby":
-                            intent = new Intent(Categories.this, BabyNeedsPackingList.class);
+                            intent = new Intent(Categories.this, HotelItemsList.class);
+                            intent.putExtra("tripId", tripId);
+                            intent.putExtra("itemListType", "babyItems");
                             break;
                         case "Budget Calculator":
                             intent = new Intent(Categories.this, BudgetCalculatorActivity.class);
+                            intent.putExtra("tripId", tripId);
                             break;
                         default:
                             // Handle custom categories
@@ -235,12 +288,15 @@ public class Categories extends AppCompatActivity {
             homeIntent.putExtras(bundle);
 
             // 3. (Optional) Save to Firebase before navigating
-            saveToFirebase(selectedItemsByCategory);
+            //saveToFirebase(selectedItemsByCategory);
 
             // 4. Navigate to Home
             startActivity(homeIntent);
             finish();
         });
+
+        Intent intent = getIntent();
+        tripId = intent.getStringExtra("tripId");
     }
 
     // Helper method to save to Firebase
