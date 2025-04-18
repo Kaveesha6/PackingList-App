@@ -63,7 +63,7 @@ public class UserSessionManager {
     // Constructor
     public UserSessionManager(Context context) {
         this.context = context;
-        pref = context.getSharedPreferences(PREFER_NAME, PRIVATE_MODE);
+        pref = context.getSharedPreferences(PREFER_NAME, Context.MODE_PRIVATE);
         editor = pref.edit();
         try {
             createKey();
