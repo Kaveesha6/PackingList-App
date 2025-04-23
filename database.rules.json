@@ -1,0 +1,16 @@
+{
+  "rules": {
+    "usernames": {
+      ".read": true,
+      ".write": true
+    },
+    "users": {
+        ".read": true,
+        ".write": true
+    },
+    "userTrips": {
+        ".read": true,
+        ".write": true
+    }
+  }
+}
