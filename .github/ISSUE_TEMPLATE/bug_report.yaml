@@ -1,4 +1,4 @@
-name: "Bug Report"
+name: " Bug Report "
 description: "Report a bug you encountered."
 title: "[Bug]: "
 labels: [bug]
@@ -17,3 +17,4 @@ body:
   - type: input
     attributes:
       label: Actual Behavior
+ 

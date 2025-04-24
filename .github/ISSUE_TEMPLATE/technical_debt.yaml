@@ -1,4 +1,4 @@
-name: "Technical Debt"
+name: " Technical Debt "
 description: "Log technical debt or refactoring needs."
 title: "[TechDebt]: "
 labels: [technical debt]
