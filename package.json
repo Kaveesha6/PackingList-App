@@ -1,0 +1,28 @@
+{
+  "name": "packinglist-app",
+  "version": "1.0.0",
+  "description": "A mobile app designed to help users create personalized packing lists for their trips, with integrated budget management and weather-based item suggestions.",
+  "main": "index.js",
+  "scripts": {
+    "prepare": "husky install",
+    "release": "standard-version"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kaveesha6/PackingList-App.git"
+  },
+  "keywords": [],
+  "author": "Kaveesha",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@commitlint/cli": "^18.6.1",
+    "@commitlint/config-conventional": "^18.6.3",
+    "husky": "^8.0.3",
+    "standard-version": "^9.5.0"
+  },
+  "bugs": {
+    "url": "https://github.com/Kaveesha6/PackingList-App/issues"
+  },
+  "homepage": "https://github.com/Kaveesha6/PackingList-App#readme"
+}
