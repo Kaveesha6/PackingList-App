@@ -6,7 +6,8 @@
   "scripts": {
     "prepare": "husky install",
     "release": "standard-version",
-    "test": "jest"
+    "test": "jest",
+    "test": "jest --coverage"
   },
   "repository": {
     "type": "git",
