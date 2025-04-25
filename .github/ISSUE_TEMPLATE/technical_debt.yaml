@@ -1,0 +1,11 @@
+name: " Technical Debt "
+description: "Log technical debt or refactoring needs."
+title: "[TechDebt]: "
+labels: [technical debt]
+body:
+  - type: textarea
+    attributes:
+      label: What needs improvement?
+  - type: input
+    attributes:
+      label: Why is this technical debt important to fix?
