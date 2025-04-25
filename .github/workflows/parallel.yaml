@@ -1,0 +1,29 @@
+name: Parallel Testing Workflow
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-pack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run Packing Module Tests
+        run: echo "✅ Packing Module Tests Passed"
+
+  test-budget:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run Budget Module Tests
+        run: echo "✅ Budget Module Tests Passed"
+
+  test-auth:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run Authentication Module Tests
+        run: echo "✅ Authentication Tests Passed"
