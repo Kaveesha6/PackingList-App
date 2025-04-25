@@ -1,16 +1,10 @@
-### Summary
-Briefly explain what this pull request does.
-
-### Related Issue
-Closes #[issue-number] (if applicable)
-
-### Changes Made
-- List the features, fixes, or improvements included in this PR.
-
-### Screenshots (if applicable)
-_Add any UI screenshots here to show what changed._
+### Description
+What changes are you making in this PR?
 
 ### Checklist
-- [ ] Code is tested and works
-- [ ] Follows coding standards
-- [ ] Ready to merge
+- [ ] My code follows the project guidelines
+- [ ] I tested my changes
+- [ ] I updated documentation (if needed)
+
+### Related Issues
+Fixes #[issue-number] (if applicable)

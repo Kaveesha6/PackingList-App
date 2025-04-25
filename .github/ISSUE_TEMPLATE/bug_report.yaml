@@ -1,0 +1,20 @@
+name: " Bug Report "
+description: "Report a bug you encountered."
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: textarea
+    attributes:
+      label: What happened?
+      description: Describe the bug in detail.
+  - type: textarea
+    attributes:
+      label: Steps to Reproduce
+      description: What steps led to this bug?
+  - type: input
+    attributes:
+      label: Expected Behavior
+  - type: input
+    attributes:
+      label: Actual Behavior
+ 
